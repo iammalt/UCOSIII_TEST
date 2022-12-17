@@ -1,0 +1,11 @@
+.\cpu_c.o: ..\UCOSIII\uC-CPU\ARM-Cortex-M3\RealView\cpu_c.c
+.\cpu_c.o: ..\UCOSIII\uC-CPU\ARM-Cortex-M3\RealView\cpu.h
+.\cpu_c.o: ..\UCOSIII\uC-CPU\cpu_def.h
+.\cpu_c.o: ..\UCOSIII\uCOS-CONFIG\cpu_cfg.h
+.\cpu_c.o: ..\UCOSIII\uC-CPU\cpu_core.h
+.\cpu_c.o: ..\UCOSIII\uC-LIB\lib_def.h
+.\cpu_c.o: ..\UCOSIII\uC-LIB\lib_mem.h
+.\cpu_c.o: ..\UCOSIII\uC-CPU\cpu_core.h
+.\cpu_c.o: ..\UCOSIII\uCOS-CONFIG\lib_cfg.h
+.\cpu_c.o: ..\UCOSIII\uC-LIB\lib_str.h
+.\cpu_c.o: ..\UCOSIII\uC-LIB\lib_ascii.h
