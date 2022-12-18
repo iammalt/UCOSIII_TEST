@@ -116,10 +116,6 @@
       <TargetDriverDllRegistry>
         <SetRegEntry>
           <Number>0</Number>
-          <Key>DLGUARM</Key>
-        </SetRegEntry>
-        <SetRegEntry>
-          <Number>0</Number>
           <Key>ARMRTXEVENTFLAGS</Key>
           <Name>-L70 -Z18 -C0 -M0 -T1</Name>
         </SetRegEntry>
@@ -143,9 +139,9 @@
         <Bp>
           <Number>0</Number>
           <Type>0</Type>
-          <LineNumber>245</LineNumber>
+          <LineNumber>249</LineNumber>
           <EnabledFlag>1</EnabledFlag>
-          <Address>134218274</Address>
+          <Address>134218738</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
@@ -154,7 +150,23 @@
           <BreakIfRCount>1</BreakIfRCount>
           <Filename>F:\Git Repo\UCOSIII  TEST\UCOSIII_TEST\ALIENTEK MINISTM32 瀹為獙10 TFTLCD鏄剧ず瀹為獙-搴撳嚱鏁?LCD+LED\USER\main.c</Filename>
           <ExecCommand></ExecCommand>
-          <Expression>\\LCD\main.c\245</Expression>
+          <Expression>\\LCD\main.c\249</Expression>
+        </Bp>
+        <Bp>
+          <Number>1</Number>
+          <Type>0</Type>
+          <LineNumber>337</LineNumber>
+          <EnabledFlag>1</EnabledFlag>
+          <Address>134218580</Address>
+          <ByteObject>0</ByteObject>
+          <HtxType>0</HtxType>
+          <ManyObjects>0</ManyObjects>
+          <SizeOfObject>0</SizeOfObject>
+          <BreakByAccess>0</BreakByAccess>
+          <BreakIfRCount>1</BreakIfRCount>
+          <Filename>F:\Git Repo\UCOSIII  TEST\UCOSIII_TEST\ALIENTEK MINISTM32 瀹為獙10 TFTLCD鏄剧ず瀹為獙-搴撳嚱鏁?LCD+LED\USER\main.c</Filename>
+          <ExecCommand></ExecCommand>
+          <Expression>\\LCD\main.c\337</Expression>
         </Bp>
       </Breakpoint>
       <WatchWindow1>
@@ -192,6 +204,21 @@
           <count>6</count>
           <WinNumber>1</WinNumber>
           <ItemText>LCDTaskTCB,0x0A</ItemText>
+        </Ww>
+        <Ww>
+          <count>7</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>*key</ItemText>
+        </Ww>
+        <Ww>
+          <count>8</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>key</ItemText>
+        </Ww>
+        <Ww>
+          <count>9</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>x</ItemText>
         </Ww>
       </WatchWindow1>
       <Tracepoint>

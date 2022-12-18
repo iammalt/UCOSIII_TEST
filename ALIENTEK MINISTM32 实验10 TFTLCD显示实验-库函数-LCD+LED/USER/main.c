@@ -43,6 +43,17 @@ void led0_task(void *p_arg);
 
 
 //任务优先级
+#define MAIN_TASK_PRIO		8
+//任务堆栈大小	
+#define MAIN_STK_SIZE 		128
+//任务控制块
+OS_TCB Main_TaskTCB;
+//任务堆栈	
+CPU_STK MAIN_TASK_STK[MAIN_STK_SIZE];
+void main_task(void *p_arg);
+
+
+//任务优先级
 #define KEY_TASK_PRIO		6
 //任务堆栈大小	
 #define KEY_STK_SIZE 		128
@@ -66,9 +77,20 @@ CPU_STK LCD_TASK_STK[LCD_STK_SIZE];
 void LCD_task(void *p_arg);
 
 
+
+
 ////////////////////////////////////////////////////////
+u8 tmr1sta=0; 	//标记定时器的工作状态
 OS_TMR 	tmr1;		//定时器1
 void tmr1_callback(void *p_tmr, void *p_arg); 	//定时器1回调函数
+
+
+#define KEYMSG_Q_NUM 		1 //按键消息队列的数量
+#define DATAMSG_Q_NUM 		4 //发送数据的消息队列的数量
+OS_Q KEY_Msg; //定义一个消息队列，用于按键消息传递，模拟消息邮箱
+OS_Q DATA_Msg; //定义一个消息队列，用于发送数据
+
+
 
 
 //Mini STM32开发板范例代码10
@@ -116,7 +138,7 @@ void tmr1_callback(void *p_tmr, void *p_arg); 	//定时器1回调函数
 //开始任务函数
 void start_task(void *p_arg)
 {
-OS_ERR err;
+	OS_ERR err;
 	CPU_SR_ALLOC();
 	p_arg = p_arg;
 
@@ -177,7 +199,32 @@ OS_ERR err;
                  (OS_TICK	  )0,					
                  (void   	* )0,				
                  (OS_OPT      )OS_OPT_TASK_STK_CHK|OS_OPT_TASK_STK_CLR, 
-                 (OS_ERR 	* )&err);	
+                 (OS_ERR 	* )&err);
+	//创建主任务
+	OSTaskCreate((OS_TCB 	* )&Main_TaskTCB,		
+				 (CPU_CHAR	* )"Main task", 		
+                 (OS_TASK_PTR )main_task, 			
+                 (void		* )0,					
+                 (OS_PRIO	  )MAIN_TASK_PRIO,     
+                 (CPU_STK   * )&MAIN_TASK_STK[0],	
+                 (CPU_STK_SIZE)MAIN_STK_SIZE/10,	
+                 (CPU_STK_SIZE)MAIN_STK_SIZE,		
+                 (OS_MSG_QTY  )0,					
+                 (OS_TICK	  )0,  					
+                 (void   	* )0,					
+                 (OS_OPT      )OS_OPT_TASK_STK_CHK|OS_OPT_TASK_STK_CLR,
+                 (OS_ERR 	* )&err);
+				 
+	//创建消息队列 KEY_Msg
+	OSQCreate ( (OS_Q* )&KEY_Msg,		//消息队列 
+			(CPU_CHAR* )"KEY Msg",		//消息队列名称
+			(OS_MSG_QTY )KEYMSG_Q_NUM,  //消息队列长度，这里设置为 1
+			(OS_ERR* )&err); 			//错误码
+	//创建消息队列 DATA_Msg
+	OSQCreate ( (OS_Q* )&DATA_Msg, 
+			(CPU_CHAR* )"DATA Msg",
+			(OS_MSG_QTY )DATAMSG_Q_NUM,
+			(OS_ERR* )&err);	
 				 
 	//创建定时器1
 	OSTmrCreate((OS_TMR		*)&tmr1,		//定时器1
@@ -214,11 +261,43 @@ void led0_task(void *p_arg)
 //Key任务函数
 void Key_task(void *p_arg)
 {
+
+	u8 *key;
+	OS_MSG_SIZE size;
 	OS_ERR err;
 	while(1)
-	{
-		
-		OSTimeDlyHMSM(0,0,0,500,OS_OPT_TIME_HMSM_STRICT,&err); //延时500ms
+	{		
+		//请求消息 KEY_Msg
+		key=OSQPend((OS_Q* )&KEY_Msg,
+					(OS_TICK )0,
+					(OS_OPT )OS_OPT_PEND_BLOCKING,
+					(OS_MSG_SIZE* )&size,
+					(CPU_TS* )0,
+					(OS_ERR* )&err);
+		switch(*key)
+		{
+			case Button_WAKEUP : //KEY_UP 控制 LED1
+				LED1 = ~LED1;
+				LCD_ShowString(50,170,"WAKEUP!");
+			break;
+			case Button_KEY0: //KEY0 刷新 LCD 背景
+				LED0= ~LED0;
+				LCD_ShowString(50,170,"KEY0");
+			break;
+			case Button_KEY1: //KEY1 控制定时器 1
+				tmr1sta = !tmr1sta;
+				if(tmr1sta)
+				{
+					OSTmrStart(&tmr1,&err);
+					LCD_ShowString(50,170,"TMR1 START!");
+				}
+				else
+				{
+					OSTmrStop(&tmr1,OS_OPT_TMR_NONE,0,&err); //停止定时器 1
+					LCD_ShowString(50,170,"TMR1 STOP! ");
+				}
+			break;
+		}	
 	}
 
 }	
@@ -269,6 +348,27 @@ void tmr1_callback(void *p_tmr, void *p_arg)
 	LCD_ShowString(30,130,"Timer int");	
 	LCD_ShowNum(182,131,tmr1_num,3,16);  //显示定时器1执行次数	
 	tmr1_num++;		//定时器1执行次数加1
+}
+
+void main_task(void *p_arg)
+{
+	u8 key;
+	OS_ERR err;
+	while(1)
+	{
+		key = KEY_Scan();  //扫描按键
+		if(key)
+		{
+			//发送消息
+			OSQPost((OS_Q*		)&KEY_Msg,		
+					(void*		)&key,
+					(OS_MSG_SIZE)1,
+					(OS_OPT		)OS_OPT_POST_FIFO,
+					(OS_ERR*	)&err);
+		}
+		
+		OSTimeDlyHMSM(0,0,0,10,OS_OPT_TIME_PERIODIC,&err);   //延时10ms
+	}
 }
 
 
