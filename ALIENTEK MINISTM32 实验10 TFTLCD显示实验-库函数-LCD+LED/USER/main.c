@@ -66,6 +66,10 @@ CPU_STK LCD_TASK_STK[LCD_STK_SIZE];
 void LCD_task(void *p_arg);
 
 
+////////////////////////////////////////////////////////
+OS_TMR 	tmr1;		//定时器1
+void tmr1_callback(void *p_tmr, void *p_arg); 	//定时器1回调函数
+
 
 //Mini STM32开发板范例代码10
 //TFTLCD显示 实验
@@ -174,6 +178,17 @@ OS_ERR err;
                  (void   	* )0,				
                  (OS_OPT      )OS_OPT_TASK_STK_CHK|OS_OPT_TASK_STK_CLR, 
                  (OS_ERR 	* )&err);	
+				 
+	//创建定时器1
+	OSTmrCreate((OS_TMR		*)&tmr1,		//定时器1
+                (CPU_CHAR	*)"tmr1",		//定时器名字
+                (OS_TICK	 )20,			//20*10=200ms
+                (OS_TICK	 )100,          //100*10=1000ms
+                (OS_OPT		 )OS_OPT_TMR_PERIODIC, //周期模式
+                (OS_TMR_CALLBACK_PTR)tmr1_callback,//定时器1回调函数
+                (void	    *)0,			//参数为0
+                (OS_ERR	    *)&err);		//返回的错误码			 
+	OSTmrStart(&tmr1,&err);	//开启定时器1			 
 	OS_TaskSuspend((OS_TCB*)&StartTaskTCB,&err);		//挂起开始任务			 
 	OS_CRITICAL_EXIT();	//进入临界区
 				 
@@ -190,6 +205,7 @@ void led0_task(void *p_arg)
 		OSTimeDlyHMSM(0,0,0,200,OS_OPT_TIME_HMSM_STRICT,&err); //延时200ms
 		LED0=1;
 		OSTimeDlyHMSM(0,0,0,500,OS_OPT_TIME_HMSM_STRICT,&err); //延时500ms
+
 	}
 }	
 	 
@@ -245,4 +261,14 @@ CPU_SR_ALLOC();
 	}	
 
  }
+
+//定时器1的回调函数
+void tmr1_callback(void *p_tmr, void *p_arg)
+{
+	static u8 tmr1_num=0;
+	LCD_ShowString(30,130,"Timer int");	
+	LCD_ShowNum(182,131,tmr1_num,3,16);  //显示定时器1执行次数	
+	tmr1_num++;		//定时器1执行次数加1
+}
+
 
